@@ -9,7 +9,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on
 
 # 2. Instal dependensi sistem yang diperlukan untuk build
+# 🔥 PERUBAHAN DI SINI: Menambahkan build-essential untuk kompilasi
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     poppler-utils \
     tesseract-ocr \
     git \
@@ -24,15 +26,14 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # 5. Paksa EasyOCR mengunduh modelnya di sini
-#    (Menggunakan direktori custom untuk mempermudah penyalinan)
 RUN python -c "import easyocr; reader = easyocr.Reader(['id', 'en'], gpu=False, model_storage_directory='/opt/easyocr_models')"
 
 # =========================================================================
-# STAGE 2: Final - Image akhir yang bersih dan kecil (URUTAN DIPERBAIKI)
+# STAGE 2: Final - Image akhir yang bersih dan kecil
 # =========================================================================
 FROM python:3.11-slim AS final
 
-# 🔥 PERUBAHAN DI SINI: Instal dependensi sistem SEBAGAI ROOT terlebih dahulu
+# Instal dependensi sistem yang diperlukan untuk RUNTIME saja
 RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     tesseract-ocr \
@@ -40,7 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🔥 BARU SETELAH ITU, buat user non-root dan direktori kerja
+# Buat user non-root dan direktori kerja
 RUN useradd --create-home --shell /bin/bash appuser
 WORKDIR /home/appuser/app
 
@@ -51,7 +52,7 @@ COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser --from=builder /opt/easyocr_models /home/appuser/.EasyOCR
 
 # Salin kode aplikasi Anda
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser --from=builder /app .
 
 # Ganti ke user non-root untuk menjalankan aplikasi (lebih aman)
 USER appuser
