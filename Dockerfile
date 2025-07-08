@@ -9,12 +9,14 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on
 
 # 2. Instal dependensi sistem yang diperlukan untuk build
-# 🔥 PERUBAHAN DI SINI: Menambahkan build-essential untuk kompilasi
+# 🔥 PERUBAHAN DI SINI: Menambahkan library yang dibutuhkan OpenCV
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     poppler-utils \
     tesseract-ocr \
     git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 3. Buat dan aktifkan virtual environment
@@ -52,7 +54,7 @@ COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser --from=builder /opt/easyocr_models /home/appuser/.EasyOCR
 
 # Salin kode aplikasi Anda
-COPY --chown=appuser:appuser --from=builder /app .
+COPY --chown=appuser:appuser . .
 
 # Ganti ke user non-root untuk menjalankan aplikasi (lebih aman)
 USER appuser
