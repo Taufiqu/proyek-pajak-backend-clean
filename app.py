@@ -35,7 +35,8 @@ from bukti_setor.routes import laporan_bp  # pastikan ini diimpor untuk digunaka
 # ==============================================================================
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
+vercel_url = "https://proyek-pajak.vercel.app/"  # URL Vercel Anda
+CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", vercel_url])
 
 db.init_app(app)
 app.register_blueprint(bukti_setor_bp)
