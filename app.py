@@ -8,7 +8,7 @@ import os
 # ==============================================================================
 # 2. Pustaka Pihak Ketiga (Third-Party)
 # ==============================================================================
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
@@ -35,9 +35,17 @@ from bukti_setor.routes import laporan_bp  # pastikan ini diimpor untuk digunaka
 # ==============================================================================
 app = Flask(__name__)
 app.config.from_object(Config)
-ngrok_url = "https://74768a8fc206.ngrok-free.app"
-vercel_url = "https://proyek-pajak.vercel.app"  # URL Vercel Anda
-CORS(app, origins=["http://localhost:3000", ngrok_url, vercel_url ], supports_credentials=True)
+
+# CORS Configuration - simplified to avoid duplicates
+CORS(app, 
+     origins=["*"],  # Temporary untuk debug, nanti kita restrict lagi
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization", "Accept"],
+     supports_credentials=False)  # Set False untuk avoid credential issues
+
+print("🧪 Loaded DB URL:", os.getenv("DATABASE_URL"))
+# ==============================================================================
+# INISIALISASI DATABASE
 
 db.init_app(app)
 app.register_blueprint(bukti_setor_bp)
@@ -102,7 +110,9 @@ def delete_bukti_setor_endpoint(id):
 @app.route("/preview/<filename>")
 def serve_preview(filename):
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    return send_file(filepath, mimetype="image/jpeg")
+    response = make_response(send_file(filepath, mimetype="image/jpeg"))
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
 
 # ==============================================================================
 # MAIN ENTRY POINT
@@ -110,5 +120,13 @@ def serve_preview(filename):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    
+    # Ambil port dari FLASK_PORT di .env, jika tidak ada gunakan PORT, default 5001
+    port = int(os.environ.get("FLASK_PORT", os.environ.get("PORT", 5001)))
+    print(f"🚀 Starting server on port {port}")
+    
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=True
+    )

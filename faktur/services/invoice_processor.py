@@ -13,7 +13,8 @@ from faktur.utils import (
     extract_ppn, extract_keterangan
 )
 from shared_utils.file_utils import allowed_file
-from bukti_setor.utils.helpers import preprocess_for_ocr, simpan_preview_image
+from shared_utils.file_utils import simpan_preview_image
+from shared_utils.image_utils import preprocess_for_tesseract
 
 
 def process_invoice_file(request, config):
@@ -50,7 +51,7 @@ def process_invoice_file(request, config):
             else:
                 img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
-            thresh = preprocess_for_ocr(img_cv)
+            thresh = preprocess_for_tesseract(img_cv)
 
             preview_filename = simpan_preview_image(
                 pil_image=image,
@@ -60,6 +61,11 @@ def process_invoice_file(request, config):
             )
 
             raw_text = pytesseract.image_to_string(img_cv, lang="ind", config="--psm 6")
+            
+            print(f"[🔤 DEBUG OCR-Tesseract Input] Halaman {halaman_ke} ------------")
+            print(raw_text[:500] + "..." if len(raw_text) > 500 else raw_text)
+            print("--------------------------------------------")
+            
             no_faktur, tanggal_obj = extract_faktur_tanggal(raw_text)
 
             jenis_pajak, blok_rekanan, _ = extract_jenis_pajak(raw_text, nama_pt_utama)
@@ -82,6 +88,7 @@ def process_invoice_file(request, config):
 
             hasil_halaman = {
                 "klasifikasi": jenis_pajak,
+                "preview_image": preview_filename,
                 "data": {
                     # GUNAKAN KONDISI INI: Jika tanggal_obj ada, format. Jika tidak, beri string kosong.
                     "bulan": tanggal_obj.strftime("%B") if tanggal_obj else "",
@@ -97,7 +104,6 @@ def process_invoice_file(request, config):
                     "formatted_dpp": dpp_str,
                     "formatted_ppn": ppn_str,
                     "halaman": halaman_ke,
-                    "preview_image": preview_filename,
                     "raw_ocr": raw_text,
                 },
             }

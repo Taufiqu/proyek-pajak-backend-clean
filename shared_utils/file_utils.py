@@ -11,6 +11,8 @@ from flask import current_app
 
 def simpan_preview_image(pil_image, upload_folder, page_num=1, original_filename="preview"):
     try:
+        current_app.logger.debug(f"[🌀] simpan_preview_image dipanggil untuk {original_filename} halaman {page_num}")
+
         pil_image = pil_image.convert("RGB")
         buffer = BytesIO()
         pil_image.save(buffer, format="JPEG", quality=85)

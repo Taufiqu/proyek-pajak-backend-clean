@@ -1,0 +1,226 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proyek-pajak-backend"
+version = "1.0.0"
+description = "OCR-based tax document processing backend"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Taufiqu", email = "taufiqu@example.com"},
+]
+keywords = ["ocr", "tax", "invoice", "flask", "backend"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: Flask",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "Flask>=2.3.3",
+    "SQLAlchemy>=2.0.23",
+    "Flask-SQLAlchemy>=3.0.5",
+    "easyocr>=1.7.0",
+    "supabase>=1.0.0",
+    "openpyxl>=3.1.2",
+    "Pillow>=10.0.1",
+    "pdf2image>=1.16.3",
+    "python-dotenv>=1.0.0",
+    "psycopg2-binary>=2.9.7",
+    "requests>=2.31.0",
+    "werkzeug>=2.3.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-flask>=1.2.0",
+    "black>=22.0.0",
+    "isort>=5.10.0",
+    "flake8>=4.0.0",
+    "pre-commit>=2.17.0",
+    "mypy>=0.942",
+    "bandit>=1.7.0",
+    "safety>=1.10.0",
+]
+docs = [
+    "sphinx>=4.0.0",
+    "sphinx-rtd-theme>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-flask>=1.2.0",
+    "httpx>=0.23.0",
+    "requests-mock>=1.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Taufiqu/proyek-pajak-backend-clean"
+Repository = "https://github.com/Taufiqu/proyek-pajak-backend-clean.git"
+Documentation = "https://github.com/Taufiqu/proyek-pajak-backend-clean#readme"
+"Bug Tracker" = "https://github.com/Taufiqu/proyek-pajak-backend-clean/issues"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+  | venv
+  | __pycache__
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["app", "models", "config", "faktur", "bukti_setor", "shared_utils"]
+skip = [
+    "venv",
+    "migrations",
+    "__pycache__",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    "build",
+    "dist",
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+exclude = [
+    "venv",
+    "migrations",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "easyocr.*",
+    "supabase.*",
+    "pdf2image.*",
+    "openpyxl.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=.",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "ocr: marks tests that require OCR engine",
+    "database: marks tests that require database",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "venv/*",
+    "tests/*",
+    "migrations/*",
+    "__pycache__/*",
+    "setup.py",
+    "conftest.py",
+    "*/test_*.py",
+    "*/*_test.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "migrations"]
+skips = ["B101", "B601"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503", "E501"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    "migrations",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+]
+per-file-ignores = [
+    "__init__.py:F401",
+    "test_*.py:S101",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "models*", "config*", "faktur*", "bukti_setor*", "shared_utils*"]
+exclude = ["tests*", "venv*", "migrations*"]

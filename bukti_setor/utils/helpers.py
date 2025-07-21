@@ -4,8 +4,6 @@ import os
 import hashlib
 from io import BytesIO
 from PIL import Image
-import cv2
-import numpy as np
 from flask import current_app
 
 def simpan_preview_image(pil_image, upload_folder, page_num, original_filename="preview"):
@@ -32,8 +30,3 @@ def simpan_preview_image(pil_image, upload_folder, page_num, original_filename="
     except Exception as e:
         current_app.logger.error(f"[❌ ERROR SIMPAN PREVIEW] {e}")
         return None
-
-def preprocess_for_ocr(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    denoised = cv2.fastNlMeansDenoising(gray, None, 10, 7, 21)
-    return denoised

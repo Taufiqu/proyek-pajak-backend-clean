@@ -1,6 +1,7 @@
 # models.py
 
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -16,7 +17,10 @@ class PpnMasukan(db.Model):
     no_faktur = db.Column(db.String(100), unique=True, nullable=False)
     dpp = db.Column(db.Numeric(15, 2), nullable=False)
     ppn = db.Column(db.Numeric(15, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<PpnMasukan {self.no_faktur}>'
 
 class PpnKeluaran(db.Model):
     __tablename__ = "ppn_keluaran"
@@ -30,12 +34,19 @@ class PpnKeluaran(db.Model):
     no_faktur = db.Column(db.String(100), unique=True, nullable=False)
     dpp = db.Column(db.Numeric(15, 2), nullable=False)
     ppn = db.Column(db.Numeric(15, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<PpnKeluaran {self.no_faktur}>'
 
 class BuktiSetor(db.Model):
     __tablename__ = 'bukti_setor'
+    
     id = db.Column(db.Integer, primary_key=True)
     tanggal = db.Column(db.Date, nullable=False)
     kode_setor = db.Column(db.String(100), nullable=False)
     jumlah = db.Column(db.Numeric(15, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<BuktiSetor {self.kode_setor}>'
