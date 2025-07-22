@@ -105,9 +105,11 @@ def extract_bukti_setor_data(filepath, poppler_path):
     # OCR akan di-initialize secara lazy saat process_with_easyocr dipanggil
     list_of_results = []
     filename_only = os.path.basename(filepath)
+    total_pages = 1  # Default value
 
     if filepath.lower().endswith('.pdf'):
         all_pages_as_images = convert_from_path(filepath, poppler_path=poppler_path)
+        total_pages = len(all_pages_as_images)
         for i, page_image in enumerate(all_pages_as_images):
             result_data = _extract_data_from_image(
                 pil_image=page_image,
@@ -115,7 +117,25 @@ def extract_bukti_setor_data(filepath, poppler_path):
                 page_num=i + 1,
                 original_filename=filename_only
             )
-            list_of_results.append(result_data)
+            # Format sesuai dengan struktur faktur untuk mendukung navigation
+            formatted_result = {
+                "preview_image": result_data.get("preview_filename"),
+                "data": {
+                    "kode_setor": result_data.get("kode_setor", ""),
+                    "tanggal": result_data.get("tanggal"),
+                    "jumlah": result_data.get("jumlah", ""),
+                    "halaman": i + 1,
+                },
+                "halaman": i + 1
+            }
+            
+            # Tambahkan warning atau error jika ada
+            if "warning" in result_data:
+                formatted_result["warning_message"] = result_data["warning"]
+            if "error" in result_data:
+                formatted_result["error"] = result_data["error"]
+                
+            list_of_results.append(formatted_result)
     else:
         pil_image = Image.open(filepath)
         result_data = _extract_data_from_image(
@@ -124,9 +144,32 @@ def extract_bukti_setor_data(filepath, poppler_path):
             page_num=1,
             original_filename=filename_only
         )
-        list_of_results.append(result_data)
+        # Format sesuai dengan struktur faktur untuk mendukung navigation
+        formatted_result = {
+            "preview_image": result_data.get("preview_filename"),
+            "data": {
+                "kode_setor": result_data.get("kode_setor", ""),
+                "tanggal": result_data.get("tanggal"),
+                "jumlah": result_data.get("jumlah", ""),
+                "halaman": 1,
+            },
+            "halaman": 1
+        }
+        
+        # Tambahkan warning atau error jika ada
+        if "warning" in result_data:
+            formatted_result["warning_message"] = result_data["warning"]
+        if "error" in result_data:
+            formatted_result["error"] = result_data["error"]
+            
+        list_of_results.append(formatted_result)
+        total_pages = 1
 
-    return list_of_results
+    return {
+        "success": True,
+        "results": list_of_results,
+        "total_halaman": total_pages
+    }
 def extract_bukti_setor_from_request(request):
     if "file" not in request.files:
         raise ValueError("File tidak ditemukan dalam request.")
@@ -135,6 +178,7 @@ def extract_bukti_setor_from_request(request):
     if not allowed_file(file.filename):
         raise ValueError("File tidak didukung. Gunakan PDF atau gambar.")
     
+    upload_folder = current_app.config['UPLOAD_FOLDER']
     current_app.logger.debug(f"[📥] File diterima: {file.filename}")
     current_app.logger.debug(f"[📁] Upload folder: {upload_folder}")
 
@@ -144,7 +188,6 @@ def extract_bukti_setor_from_request(request):
     elif not is_image_file(file.filename):
         raise ValueError("File harus berupa gambar atau PDF.")
 
-    upload_folder = current_app.config['UPLOAD_FOLDER']
     filepath = os.path.join(upload_folder, file.filename)
     file.save(filepath)
 

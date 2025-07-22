@@ -48,7 +48,8 @@ def process_bukti_setor_endpoint():
     try:
         poppler_path = current_app.config.get('POPPLER_PATH')
         extracted_data = extract_bukti_setor_data(filepath, poppler_path)
-        return jsonify(message="Data berhasil diekstrak.", data=extracted_data), 200
+        # Data sudah dalam format yang sama dengan faktur
+        return jsonify(extracted_data), 200
     except Exception as e:
         current_app.logger.error(f"Error processing bukti setor: {e}\n{traceback.format_exc()}")
         return jsonify(error=str(e)), 500
@@ -62,23 +63,50 @@ def save_bukti_setor_endpoint():
     data = request.get_json()
     print("🚀 Data diterima di backend:", data)
 
-    kode_setor = data.get('kode_setor')
-    tanggal = data.get('tanggal')
-    jumlah = data.get('jumlah')
-
-    if not all([kode_setor, tanggal, jumlah]):
-        return jsonify(error="Field tidak lengkap"), 400
-
     try:
-        tanggal_obj = datetime.strptime(tanggal, '%Y-%m-%d').date()
-        new_record = BuktiSetor(
-            tanggal=tanggal_obj,
-            kode_setor=str(kode_setor),
-            jumlah=float(jumlah)
-        )
-        db.session.add(new_record)
-        db.session.commit()
-        return jsonify(message="Data bukti setor berhasil disimpan!"), 201
+        # Support untuk bulk save (multiple records)
+        if isinstance(data, list):
+            saved_count = 0
+            for item in data:
+                kode_setor = item.get('kode_setor')
+                tanggal = item.get('tanggal')
+                jumlah = item.get('jumlah')
+
+                if not all([kode_setor, tanggal, jumlah]):
+                    print(f"⚠️ Skipping incomplete record: {item}")
+                    continue
+
+                tanggal_obj = datetime.strptime(tanggal, '%Y-%m-%d').date()
+                new_record = BuktiSetor(
+                    tanggal=tanggal_obj,
+                    kode_setor=str(kode_setor),
+                    jumlah=float(jumlah)
+                )
+                db.session.add(new_record)
+                saved_count += 1
+            
+            db.session.commit()
+            return jsonify(message=f"{saved_count} bukti setor berhasil disimpan!"), 201
+        
+        # Single record save
+        else:
+            kode_setor = data.get('kode_setor')
+            tanggal = data.get('tanggal')
+            jumlah = data.get('jumlah')
+
+            if not all([kode_setor, tanggal, jumlah]):
+                return jsonify(error="Field tidak lengkap"), 400
+
+            tanggal_obj = datetime.strptime(tanggal, '%Y-%m-%d').date()
+            new_record = BuktiSetor(
+                tanggal=tanggal_obj,
+                kode_setor=str(kode_setor),
+                jumlah=float(jumlah)
+            )
+            db.session.add(new_record)
+            db.session.commit()
+            return jsonify(message="Data bukti setor berhasil disimpan!"), 201
+            
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error saving bukti setor: {e}\n{traceback.format_exc()}")

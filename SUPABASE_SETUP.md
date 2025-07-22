@@ -24,26 +24,19 @@ Panduan untuk mengkonfigurasi proyek ini dengan database Supabase.
    ```
 
 2. **Test Koneksi Database**
+   Untuk test koneksi, Anda bisa menggunakan aplikasi utama:
    ```bash
-   python test_connection.py
-   ```
-
-3. **Deploy Schema ke Supabase**
-   ```bash
-   python deploy_to_supabase.py
+   python app.py
    ```
 
 ## Menjalankan Aplikasi
 
-1. **Inisialisasi Database (jika diperlukan)**
-   ```bash
-   python init_db.py
-   ```
-
-2. **Jalankan Aplikasi**
+1. **Jalankan Aplikasi Langsung**
    ```bash
    python app.py
    ```
+   
+   Database akan otomatis diinisialisasi saat aplikasi pertama kali dijalankan.
 
 ## Troubleshooting
 
@@ -54,7 +47,7 @@ Pastikan `sslmode=require` sudah dikonfigurasi di `config.py`. Supabase memerluk
 Periksa kembali password dan connection string di file `.env`.
 
 ### Error: Table Not Found
-Jalankan `python deploy_to_supabase.py` untuk membuat tabel-tabel yang diperlukan.
+Periksa file `models.py` dan pastikan semua tabel sudah didefinisikan dengan benar. Aplikasi akan membuat tabel secara otomatis saat pertama kali dijalankan.
 
 ## Migrasi Data (Opsional)
 
@@ -68,9 +61,7 @@ Jika Anda memiliki data di database lokal dan ingin migrasi ke Supabase:
 
 - `config.py` - Konfigurasi database dan SSL
 - `models.py` - Schema database
-- `test_connection.py` - Test koneksi
-- `deploy_to_supabase.py` - Deploy schema
-- `init_db.py` - Inisialisasi database
+- `app.py` - Aplikasi utama
 
 ## Support
 
