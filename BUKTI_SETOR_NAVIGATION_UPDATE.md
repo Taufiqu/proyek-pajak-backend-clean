@@ -216,17 +216,15 @@ class BuktiSetorNavigator {
 
 ## 🧪 Testing
 
-Jalankan test script untuk memverifikasi perubahan:
-
-```bash
-python test_bukti_setor_navigation.py
-```
+Untuk menguji perubahan, Anda bisa:
+- Menggunakan aplikasi frontend
+- Menjalankan unit tests di folder `tests/`
+- Test manual melalui API endpoint
 
 ## 🔍 Files Modified
 
 1. `bukti_setor/utils/bukti_setor_processor.py` - Response structure
 2. `bukti_setor/routes.py` - Endpoint behavior + bulk save
-3. `test_bukti_setor_navigation.py` - Testing script
 
 ## ⚠️ Breaking Changes
 

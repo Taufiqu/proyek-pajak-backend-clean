@@ -15,12 +15,26 @@ def test_bukti_setor_navigation():
     print("🧪 TESTING BUKTI SETOR NAVIGATION SYSTEM")
     print("=" * 60)
     
-    # Test dengan file sample (Anda perlu memiliki file test)
+    # Test dengan file sample (gunakan file dari uploads jika ada)
     test_file_path = "test_bukti_setor.pdf"  # Ganti dengan path file test Anda
+    
+    # Cari file test alternatif di folder uploads
+    uploads_folder = Path("uploads")
+    if uploads_folder.exists():
+        pdf_files = list(uploads_folder.glob("*.pdf"))
+        jpg_files = list(uploads_folder.glob("*.jpg"))
+        
+        if pdf_files:
+            test_file_path = str(pdf_files[0])
+            print(f"🔍 Menggunakan file test: {test_file_path}")
+        elif jpg_files:
+            test_file_path = str(jpg_files[0])
+            print(f"🔍 Menggunakan file test: {test_file_path}")
     
     if not Path(test_file_path).exists():
         print(f"❌ Test file tidak ditemukan: {test_file_path}")
         print("💡 Silakan siapkan file test bukti setor untuk testing")
+        print("💡 Atau letakkan file PDF/JPG di folder uploads/")
         return False
     
     try:
