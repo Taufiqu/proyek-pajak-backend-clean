@@ -34,28 +34,47 @@ def serve_preview(filename):
     upload_folder = current_app.config['UPLOAD_FOLDER']
     return send_from_directory(upload_folder, filename)
 
-# ========== ENDPOINT: PROSES FILE ==========
 @bukti_setor_bp.route('/process', methods=['POST'])
 def process_bukti_setor_endpoint():
+    print("🚀 [DEBUG] Starting process_bukti_setor_endpoint")
+    
     if 'file' not in request.files:
+        print("❌ [DEBUG] No file in request")
         return jsonify(error="File tidak ditemukan"), 400
     
     file = request.files['file']
+    print(f"📁 [DEBUG] Processing file: {file.filename}")
+    
     upload_folder = current_app.config['UPLOAD_FOLDER']
     filepath = os.path.join(upload_folder, file.filename)
+    print(f"💾 [DEBUG] Saving file to: {filepath}")
+    
     file.save(filepath)
+    print(f"✅ [DEBUG] File saved successfully")
 
     try:
         poppler_path = current_app.config.get('POPPLER_PATH')
+        print(f"🔧 [DEBUG] Poppler path: {poppler_path}")
+        
         extracted_data = extract_bukti_setor_data(filepath, poppler_path)
-        # Data sudah dalam format yang sama dengan faktur
-        return jsonify(extracted_data), 200
+        print(f"📊 [DEBUG] Extracted data: {extracted_data}")
+        
+        # TEMPORARY FIX: Return only the results array if frontend expects it
+        # Frontend seems to be reading response.data directly as array
+        if extracted_data.get('success') and 'results' in extracted_data:
+            print(f"📤 [DEBUG] Returning results array directly: {extracted_data['results']}")
+            return jsonify(extracted_data['results']), 200
+        else:
+            print(f"📤 [DEBUG] Returning full extracted_data")
+            return jsonify(extracted_data), 200
     except Exception as e:
+        print(f"❌ [DEBUG] Exception occurred: {str(e)}")
         current_app.logger.error(f"Error processing bukti setor: {e}\n{traceback.format_exc()}")
         return jsonify(error=str(e)), 500
     finally:
         if os.path.exists(filepath):
             os.remove(filepath)
+            print(f"🗑️ [DEBUG] Cleanup: file {filepath} removed")
 
 # ========== ENDPOINT: SIMPAN KE DB ==========
 @bukti_setor_bp.route('/save', methods=['POST'])
